@@ -2,10 +2,11 @@
 #include "keypad.h"
 
 #define input_from_keypad_SIZE 16
-
+#define conc_nums_ops_SIZE      16
 
 // Global Variables
 uint8 input_from_keypad[input_from_keypad_SIZE];
+sint16 conc_nums_ops[conc_nums_ops_SIZE];
 uint8 input_from_keypad_SIZE_used = 0;
 
 void displayFromKeypad(uint8 num)
@@ -60,6 +61,11 @@ uint8 charToInt(uint8 ch)
     return ch;
 }
 
+uint8 intToChar(uint8 int_num)
+{
+
+    return (int_num += '0');
+}
 void test()
 {
     LCD_init();
@@ -94,17 +100,46 @@ void test()
       }
 }
 
+
+void displayAnswer(void)
+{
+    int num = conc_nums_ops[0];
+    int reverse = 0,i,j;
+
+    /* print negative sign */
+    if (num < 0)
+    {
+        LCD_wite_cmd_data('-', DATA);
+        num = -num; // Make the number positive for printing
+    }
+
+    int numLength = 1;
+    int tempNum = num;
+
+    while (tempNum /= 10) {
+        numLength++;
+    }
+
+    for (i = numLength - 1; i >= 0; i--) {
+        int powerOf10 = 1;
+        for (j = 0; j < i; j++) {
+            powerOf10 *= 10;
+        }
+        int digit = (num / powerOf10) % 10;
+        LCD_wite_cmd_data(intToChar(digit), DATA);
+    }
+}
 /////////////////////////
 
-#define conc_nums_ops_SIZE      16
+
 
 uint8 counter=0;
-sint16 conc_nums_ops[conc_nums_ops_SIZE];
+
 
 void conc(void)
 {
-    uint8 i,nums_flag,neg_flag =0;
-    sint16 key_num,j=0;
+    uint8 i=0,nums_flag=0,neg_flag =0;
+    sint16 key_num=0,j=0;
 
     for(i=0;i<input_from_keypad_SIZE_used;i++)
     {
@@ -244,7 +279,8 @@ int main()
                      displayFromKeypad(num);
                      fillArrayFromKeypad(charToInt(num));
                      conc();
-                     //operationHandling();
+                     operationHandling();
+                     displayAnswer();
                  }
 
                  if(doneFlag == 0)
@@ -262,3 +298,5 @@ int main()
 
          }
 }
+
+
